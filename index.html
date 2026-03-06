@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dealerships System | Pink Edition</title>
+    <style>
+        /* CONFIGURAÇÃO GLOBAL ROSA */
+        :root {
+            --hot-pink: #FF69B4;
+            --dark-pink: #c2185b;
+            --light-pink: #fce4ec;
+            --text-gray: #555;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; overflow-x: hidden; }
+        
+        /* NAVBAR (Baseada em get_dealers_loggedin.png e deployed_landingpage.png) */
+        .navbar {
+            background-color: var(--hot-pink);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #000;
+            margin-right: 25px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .user-section { font-size: 20px; display: flex; align-items: center; gap: 15px; }
+        .logout-link { text-decoration: underline; cursor: pointer; color: #000; }
+
+        /* SISTEMA DE ABAS */
+        .tab-content { display: none; padding: 30px 50px; animation: fadeIn 0.4s; }
+        .active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ESTILO DE TABELAS (Baseado em dealersbystate.png) */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #ddd; }
+        th { background-color: #fdfdfd; padding: 12px; text-align: left; border: 1px solid #ddd; font-weight: bold; }
+        td { border: 1px solid #ddd; padding: 12px; color: #333; }
+        .dealer-link { color: #007bff; text-decoration: none; cursor: pointer; }
+        .review-icon { width: 28px; cursor: pointer; filter: hue-rotate(280deg); }
+
+        /* CARDS DE REVIEW (Baseado em dealer_id_reviews.png) */
+        .reviews-grid { display: flex; gap: 25px; overflow-x: auto; padding: 20px 0; }
+        .review-card {
+            min-width: 280px; border: 1px solid #ccc; border-radius: 12px;
+            padding: 25px; box-shadow: 4px 4px 15px rgba(0,0,0,0.1);
+            background: white; position: relative;
+        }
+        .sentiment-emoji { width: 45px; display: block; margin: 0 auto 15px; }
+
+        /* FORMULÁRIO (Baseado em dealership_review_submission.png) */
+        .form-container { max-width: 600px; margin: 0 auto; text-align: left; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 18px; margin-bottom: 8px; }
+        textarea { width: 100%; height: 120px; border: 1px solid #777; padding: 10px; font-size: 16px; }
+        input, select { width: 50%; padding: 10px; border: 1px solid #777; font-size: 16px; }
+        .btn-action { background: var(--hot-pink); border: 2px solid #000; padding: 12px 25px; font-weight: bold; cursor: pointer; font-size: 16px; }
+
+        /* ADMIN (Baseado em image_ec1f1a.png) */
+        .admin-sidebar { width: 240px; background: var(--light-pink); height: 70vh; padding: 20px; border-right: 2px solid var(--hot-pink); }
+        .admin-header { background: var(--hot-pink); color: white; padding: 10px; font-weight: bold; margin-bottom: 15px; }
+
+        /* LANDING PAGE IMAGE */
+        .hero-box { border: 1px solid #ddd; display: inline-block; padding-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .hero-img { max-width: 800px; width: 100%; display: block; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <span style="font-size: 30px; font-weight: bold; margin-right: 40px;">Dealerships</span>
+            <span class="nav-links">
+                <a onclick="switchTab('tab-landing')">Home</a>
+                <a onclick="switchTab('tab-dealers')">Dealers</a>
+                <a onclick="switchTab('tab-admin')">Admin</a>
+            </span>
+        </div>
+        <div class="user-section">
+            <span style="font-weight: bold;">nikesh</span> <span class="logout-link">Logout</span>
+        </div>
+    </nav>
+
+    <div id="tab-landing" class="tab-content active">
+        <center>
+            <div class="hero-box">
+                <img src="https://images.unsplash.com/photo-1562610338-06bfec4e597c?w=1000" class="hero-img">
+                <h2 style="margin-top:20px;">Welcome to our Dealerships!</h2>
+                <div style="width: 100px; height: 5px; background: var(--hot-pink); margin: 10px auto;"></div>
+            </div>
+        </center>
+    </div>
+
+    <div id="tab-dealers" class="tab-content">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>Car Dealerships</h1>
+            <div>
+                <label style="display:inline; margin-right:10px;">Filter State:</label>
+                <select id="stateFilter" onchange="applyFilter()" style="width:180px;">
+                    <option value="All">All States</option>
+                    <option value="Texas" selected>Texas</option>
+                    <option value="Minnesota">Minnesota</option>
+                    <option value="Alabama">Alabama</option>
+                </select>
+            </div>
+        </div>
+        <table id="dealerTable">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Dealer Name</th><th>City</th><th>Address</th><th>Zip</th><th>State</th><th>Review</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div id="tab-reviews" class="tab-content">
+        <div style="display:flex; align-items:center; gap:25px;">
+            <h1 style="color:var(--text-gray); font-size:45px; margin:0;">Job Car Dealership</h1>
+            <button class="btn-action" onclick="switchTab('tab-post')" style="border-radius:8px; color:#fff; border:none; padding:10px 20px;">💬 Write a review</button>
+        </div>
+        <p style="color:#888; font-size:22px; margin-bottom:40px;">Dallas, 253 Hanson Junction, Zip - 75216, Texas</p>
+        
+        <div class="reviews-grid">
+            <div class="review-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/742/742751.png" class="sentiment-emoji">
+                <p style="font-size:18px;">"Horizontal disintermediate methodology"</p>
+                <p style="font-style:italic; color:#999;">Editha Averies - Mazda6 2013</p>
+            </div>
+            <div class="review-card" style="border: 2px solid var(--hot-pink);">
+                <img src="https://cdn-icons-png.flaticon.com/512/742/742920.png" class="sentiment-emoji">
+                <p style="font-size:18px;"><b>"Good Staff Behavioral"</b></p>
+                <p style="font-style:italic; color:#999;">nikesh - Tata Harrier 2022</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-post" class="tab-content">
+        <div class="form-container">
+            <h1 style="color:#000080; font-size:36px;">Post New Review</h1>
+            <div class="form-group">
+                <label>Enter the review content:</label>
+                <textarea id="inputReview" placeholder="Type your experience here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Purchase Date:</label>
+                <input type="date" value="2026-03-06">
+            </div>
+            <div class="form-group">
+                <label>Select Car Model:</label>
+                <select><option>Tata Safari</option><option>Toyota Corolla</option></select>
+            </div>
+            <button class="btn-action" onclick="alert('Review Submetido!'); switchTab('tab-reviews')">Post Review</button>
+        </div>
+    </div>
+
+    <div id="tab-admin" class="tab-content">
+        <div style="display:flex;">
+            <div class="admin-sidebar">
+                <div class="admin-header">DJANGOAPP</div>
+                <ul style="list-style:none; padding:0; line-height:2.5;">
+                    <li style="color:var(--dark-pink); font-weight:bold;">➜ Car Models</li>
+                    <li>➜ Car Makes</li>
+                </ul>
+            </div>
+            <div style="flex:1; padding-left:40px;">
+                <h2 style="background:var(--light-pink); padding:10px;">Select car model to change</h2>
+                <table>
+                    <tr style="background:#eee;"><th>ID</th><th>Model Name</th><th>Type</th><th>Year</th></tr>
+                    <tr><td>1</td><td>Kluger</td><td>SUV</td><td>2022</td></tr>
+                    <tr><td>2</td><td>Camry</td><td>Sedan</td><td>2021</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // LÓGICA DE NAVEGAÇÃO
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // DADOS E FILTRAGEM (Simulando o Banco de Dados Django)
+        const allDealers = [
+            {id: 1, name: "Holdlamis Car Dealership", city: "El Paso", addr: "3 Nova Court", zip: "88563", state: "Texas"},
+            {id: 4, name: "Solarbreeze Car Dealership", city: "Dallas", addr: "85800 Hazelcrest", zip: "75241", state: "Texas"},
+            {id: 2, name: "Temp Car Dealership", city: "Minneapolis", addr: "6337 Butternut", zip: "55402", state: "Minnesota"},
+            {id: 3, name: "Sub-Ex Car Dealership", city: "Birmingham", addr: "94 Twin Pines", zip: "35285", state: "Alabama"}
+        ];
+
+        function applyFilter() {
+            const selected = document.getElementById('stateFilter').value;
+            const tbody = document.querySelector('#dealerTable tbody');
+            tbody.innerHTML = "";
+            
+            const filtered = selected === "All" ? allDealers : allDealers.filter(d => d.state === selected);
+            
+            filtered.forEach(d => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${d.id}</td>
+                        <td class="dealer-link" onclick="switchTab('tab-reviews')">${d.name}</td>
+                        <td>${d.city}</td><td>${d.addr}</td><td>${d.zip}</td><td>${d.state}</td>
+                        <td align="center"><img src="https://cdn-icons-png.flaticon.com/512/2462/2462719.png" class="review-icon" onclick="switchTab('tab-reviews')"></td>
+                    </tr>`;
+            });
+        }
+
+        // Iniciar com filtro Texas conforme imagem dealersbystate.png
+        applyFilter();
+    </script>
+</body>
+</html>
